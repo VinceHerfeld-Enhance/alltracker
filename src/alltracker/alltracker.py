@@ -207,8 +207,6 @@ class Net(nn.Module):
         return images, T, indices
 
     def get_fmaps(self, images_, B, T, sw, is_training):
-        print("image device:", images_.device, "cnn device:", next(self.cnn.parameters()).device)
-        print("get_fmaps", images_.shape, B, T)
         _, _, H_pad, W_pad = images_.shape  # revised HW
 
         C, H8, W8 = self.dim * 2, H_pad // 8, W_pad // 8
@@ -253,7 +251,6 @@ class Net(nn.Module):
                 if sw is not None and sw.save_this:
                     sw.summ_feat("1_model/fmap_raw", fmaps_[0:1])
                 fmaps_ = self.dot_conv(fmaps_)  # B*T,C,H8,W8
-        print("fmaps_ shape:", fmaps_.shape)
         return fmaps_
 
     def forward(self, images, iters=4, sw=None, is_training=False, stride=None):
@@ -593,7 +590,6 @@ class Net(nn.Module):
         time_emb = (
             self.fetch_time_embed(S, ctxfeat.dtype, is_training).reshape(1, S, self.dim, 1, 1).repeat(B, 1, 1, 1, 1)
         ).to(device)
-        print("time_emb device:", time_emb.device, "ctxfeat device:", ctxfeat.device)
         ctxfeat = ctxfeat + time_emb.reshape(B * S, self.dim, 1, 1)
 
         if self.no_ctx:
