@@ -5,6 +5,7 @@ import torch
 class AllTrackerFlow(AllTrackerNet):
     def __init__(self):
         super(AllTrackerFlow, self).__init__(seqlen=16)
+        self.latest_occlusions = None
 
     def forward(self, ref, frames):
         # Input: images [B, T, 3, H, W]
@@ -31,8 +32,9 @@ class AllTrackerFlow(AllTrackerNet):
         flows8 = torch.zeros((B * T, 2, H // 8, W // 8), dtype=frames.dtype, device=device)
 
         # --- Call forward_window() ---
-        flow_predictions, _, flows8, visconfs8, _ = self.forward_window(
+        flow_predictions, confidence_predictions, flows8, visconfs8, _ = self.forward_window(
             fmap_anchor, fmaps2, visconfs8, flows8=flows8, flowfeat=None, iters=5, sw=None, is_training=False
         )
 
+        self.latest_occlusions = confidence_predictions[-1][:, 0].unsqueeze(1)
         return flow_predictions
